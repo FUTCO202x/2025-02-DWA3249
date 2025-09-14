@@ -44,19 +44,16 @@ public class EstudianteServices {
         String nombre=scanner.nextLine();
         System.out.print("Ingrese el nuevo apellido: ");
         String apellido=scanner.nextLine();
-        System.out.print("Ingrese el nuevo correo: ");
-        String correo=scanner.nextLine();
         System.out.print("Ingrese la nueva edad: ");
         int edad=scanner.nextInt();
         System.out.print("Ingrese el nuevo estado civil (SOLTERO, CASADO, VIUDO, UNION_LIBRE, DIVORCIADO): ");
         String estadoCivil=scanner.next().toUpperCase();
 
-        String sql="UPDATE estudiantes SET nombre=?, apellido=?, correo=?, edad=?, estado_civil=? WHERE ID=?";
+        String sql="UPDATE estudiantes SET nombre=?, apellido=?, edad=?, estado_civil=? WHERE ID=?";
 
         var stm=connection.prepareStatement(sql);
         stm.setObject(1,nombre);
         stm.setObject(2,apellido);
-        stm.setObject(3,correo);
         stm.setObject(4,edad);
         stm.setObject(5,estadoCivil);
         stm.setObject(6,id);
