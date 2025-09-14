@@ -1,0 +1,294 @@
+estudiante.java
+public class Estudiante {
+    private int id;
+    private String nombre;
+    private String apellido;
+    private String correo;
+    private int edad;
+    private EstadoCivil estadoCivil;
+
+    
+    public Estudiante(int id, String nombre, String apellido, String correo, int edad, EstadoCivil estadoCivil) {
+        this.id = id;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.correo = correo;
+        this.edad = edad;
+        this.estadoCivil = estadoCivil;
+    }
+
+    public Estudiante(String nombre, String apellido, String correo, int edad, EstadoCivil estadoCivil) {
+        this(0, nombre, apellido, correo, edad, estadoCivil);
+    }
+
+    
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public int getEdad() {
+        return edad;
+    }
+
+    public void setEdad(int edad) {
+        this.edad = edad;
+    }
+
+    public EstadoCivil getEstadoCivil() {
+        return estadoCivil;
+    }
+
+    public void setEstadoCivil(EstadoCivil estadoCivil) {
+        this.estadoCivil = estadoCivil;
+    }
+
+    public String toString() {
+        return "ID: " + id +
+               ", Nombre: " + nombre +
+               ", Apellido: " + apellido +
+               ", Correo: " + correo +
+               ", Edad: " + edad +
+               ", Estado Civil: " + estadoCivil;
+    }
+}
+
+
+
+estudiantecivil.java
+public enum EstadoCivil {
+    SOLTERO,
+    CASADO,
+    VIUDO,
+    UNION_LIBRE,
+    DIVORCIADO
+}
+
+
+
+estudianteDAO.java
+import java.sql.*;
+import java.util.*;
+
+public class EstudianteDAO {
+    public boolean insertar(Estudiante estudiante) {
+        String sql = "INSERT INTO estudiantes (nombre, apellido, correo, edad, estado_civil) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = ConexionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, estudiante.getNombre());
+            ps.setString(2, estudiante.getApellido());
+            ps.setString(3, estudiante.getCorreo());
+            ps.setInt(4, estudiante.getEdad());
+            ps.setString(5, estudiante.getEstadoCivil().name());
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error al insertar: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean actualizar(Estudiante estudiante) {
+        String sql = "UPDATE estudiantes SET nombre=?, apellido=?, edad=?, estado_civil=? WHERE correo=?";
+        try (Connection conn = ConexionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, estudiante.getNombre());
+            ps.setString(2, estudiante.getApellido());
+            ps.setInt(3, estudiante.getEdad());
+            ps.setString(4, estudiante.getEstadoCivil().name());
+            ps.setString(5, estudiante.getCorreo());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean eliminarPorCorreo(String correo) {
+        String sql = "DELETE FROM estudiantes WHERE correo=?";
+        try (Connection conn = ConexionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, correo);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<Estudiante> consultarTodos() {
+        List<Estudiante> lista = new ArrayList<>();
+        String sql = "SELECT * FROM estudiantes";
+        try (Connection conn = ConexionDB.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                Estudiante e = new Estudiante(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getString("apellido"),
+                    rs.getString("correo"),
+                    rs.getInt("edad"),
+                    EstadoCivil.valueOf(rs.getString("estado_civil"))
+                );
+                lista.add(e);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al consultar todos: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public Estudiante consultarPorCorreo(String correo) {
+        String sql = "SELECT * FROM estudiantes WHERE correo=?";
+        try (Connection conn = ConexionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, correo);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Estudiante(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("apellido"),
+                        rs.getString("correo"),
+                        rs.getInt("edad"),
+                        EstadoCivil.valueOf(rs.getString("estado_civil"))
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al consultar por correo: " + e.getMessage());
+        }
+        return null;
+    }
+}
+
+
+main.java
+import java.util.List;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        EstudianteDAO dao = new EstudianteDAO();
+        int opcion;
+        do {
+            System.out.println("\n--- Menú Estudiantes ---");
+            System.out.println("1. Insertar Estudiante");
+            System.out.println("2. Actualizar Estudiante");
+            System.out.println("3. Eliminar Estudiante");
+            System.out.println("4. Consultar todos los estudiantes");
+            System.out.println("5. Consultar Estudiante por email");
+            System.out.println("6. Salir");
+            System.out.print("Seleccione una opción: ");
+            opcion = sc.nextInt();
+            sc.nextLine();
+            switch (opcion) {
+                case 1:
+                    System.out.print("Nombre: ");
+                    String nombre = sc.nextLine();
+                    System.out.print("Apellido: ");
+                    String apellido = sc.nextLine();
+                    System.out.print("Correo: ");
+                    String correo = sc.nextLine();
+                    System.out.print("Edad: ");
+                    int edad = sc.nextInt();
+                    sc.nextLine();
+                    System.out.print("Estado civil (SOLTERO, CASADO, VIUDO, UNION_LIBRE, DIVORCIADO): ");
+                    EstadoCivil estadoCivil = EstadoCivil.valueOf(sc.nextLine().toUpperCase());
+                    Estudiante nuevo = new Estudiante(nombre, apellido, correo, edad, estadoCivil);
+                    if (dao.insertar(nuevo)) {
+                        System.out.println("Estudiante insertado correctamente.");
+                    }
+                    break;
+                case 2:
+                    System.out.print("Correo del estudiante a actualizar: ");
+                    String correoAct = sc.nextLine();
+                    Estudiante eAct = dao.consultarPorCorreo(correoAct);
+                    if (eAct != null) {
+                        System.out.print("Nuevo nombre (actual: " + eAct.getNombre() + "): ");
+                        eAct.setNombre(sc.nextLine());
+                        System.out.print("Nuevo apellido (actual: " + eAct.getApellido() + "): ");
+                        eAct.setApellido(sc.nextLine());
+                        System.out.print("Nueva edad (actual: " + eAct.getEdad() + "): ");
+                        eAct.setEdad(sc.nextInt());
+                        sc.nextLine();
+                        System.out.print("Nuevo estado civil (actual: " + eAct.getEstadoCivil() + "): ");
+                        eAct.setEstadoCivil(EstadoCivil.valueOf(sc.nextLine().toUpperCase()));
+                        if (dao.actualizar(eAct)) {
+                            System.out.println("Estudiante actualizado correctamente.");
+                        }
+                    } else {
+                        System.out.println("No se encontró estudiante con ese correo.");
+                    }
+                    break;
+                case 3:
+                    System.out.print("Correo del estudiante a eliminar: ");
+                    String correoDel = sc.nextLine();
+                    if (dao.eliminarPorCorreo(correoDel)) {
+                        System.out.println("Estudiante eliminado correctamente.");
+                    } else {
+                        System.out.println("No se encontró estudiante con ese correo.");
+                    }
+                    break;
+                case 4:
+                    List<Estudiante> lista = dao.consultarTodos();
+                    if (lista.isEmpty()) {
+                        System.out.println("No hay estudiantes registrados.");
+                    } else {
+                        for (Estudiante est : lista) {
+                            System.out.println(est);
+                        }
+                    }
+                    break;
+                case 5:
+                    System.out.print("Correo a buscar: ");
+                    String correoBus = sc.nextLine();
+                    Estudiante eBus = dao.consultarPorCorreo(correoBus);
+                    if (eBus != null) {
+                        System.out.println(eBus);
+                    } else {
+                        System.out.println("No se encontró estudiante con ese correo.");
+                    }
+                    break;
+                case 6:
+                    System.out.println("Saliendo...");
+                    break;
+                default:
+                    System.out.println("Opción inválida.");
+            }
+        } while (opcion != 6);
+        sc.close();
+    }
+}
+
+
