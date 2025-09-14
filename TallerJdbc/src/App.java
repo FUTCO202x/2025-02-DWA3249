@@ -8,7 +8,7 @@ public class App {
      * - Carlos Alberto De La Rosa Banquez
      * - Ruben Dario Castaño Gallardo
      */
-    static String url="jdbc:mysql://localhost:3306/colegio";
+    static String url="jdbc:mysql://localhost:3306/escuela";
     static String userName="root";
     static String  password="Carlos1009";
 
