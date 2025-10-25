@@ -1,13 +1,13 @@
-package com.parcial.dos.parcialdos;
+package com.spring.ai.spring_ai;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ParcialdosApplication {
+public class SpringAiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ParcialdosApplication.class, args);
+		SpringApplication.run(SpringAiApplication.class, args);
 	}
 
 }

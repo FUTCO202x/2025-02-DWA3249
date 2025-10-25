@@ -1,10 +1,10 @@
-package com.parcial.dos.parcialdos;
+package com.spring.ai.spring_ai;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ParcialdosApplicationTests {
+class SpringAiApplicationTests {
 
 	@Test
 	void contextLoads() {
